@@ -1,4 +1,15 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+
+const SOCKET_URL = "http://localhost:3000";
+
+const socket = io(SOCKET_URL);
+
+const defaultValue = {
+  room: ""
+
+}
 
 type RoomContextType = {
   room: string;
@@ -25,6 +36,12 @@ export const RoomProvider = ({ children }: UserProp) => {
   const [room, setRoom] = useState(""); //Tagit bort lobby som sträng
   const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
   const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+
+    socket.emit("join_room", room);
+  }, [room])
+
 
   return (
     <RoomContext.Provider

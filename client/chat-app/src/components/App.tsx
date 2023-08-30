@@ -3,8 +3,12 @@ import "../styling/HomePage.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./HomePage";
 import Lobby from "./Lobby";
+import { useSocket } from "../context/socket-context";
 
 function App() {
+
+  const { room } = useSocket();
+
   return (
     <Router>
       <Routes>

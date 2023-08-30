@@ -25,6 +25,8 @@ export function setupSocket(server: any) {
     socket.on("enter_room", (room) => {
       socket.join(room);
       userRooms.set(socket.id, room);
+      console.log("Användare går till rum ", room);
+      console.log(io.sockets.adapter.rooms);
     });
 
     socket.on("user_connected", (username) => {
