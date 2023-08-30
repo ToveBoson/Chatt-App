@@ -6,6 +6,7 @@ const SOCKET_URL = "http://localhost:3000";
 
 const socket = io(SOCKET_URL);
 
+//utgångspunkt - tom string - skall fyllas på när man 1. Går till Lobby, 2. går in i ett döpt rum
 const defaultValue = {
   room: ""
 

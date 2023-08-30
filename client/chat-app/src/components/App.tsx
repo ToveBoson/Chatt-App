@@ -7,7 +7,8 @@ import { useSocket } from "../context/socket-context";
 
 function App() {
 
-  const { room } = useSocket();
+  // Skall synas när du skrivit in anv.namn
+  // const { room } = useSocket();
 
   return (
     <Router>
