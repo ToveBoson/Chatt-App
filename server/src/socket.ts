@@ -22,9 +22,11 @@ export function setupSocket(server: any) {
     console.log(`Användare: ${socket.id} är ansluten till rum: ${roomId}`);
     console.log(io.sockets.adapter.rooms);
 
-    socket.on("enter_room", (room) => {
+    socket.on("join_room", (room) => {
       socket.join(room);
       userRooms.set(socket.id, room);
+      console.log("Användare går till rum ", room);
+      console.log(io.sockets.adapter.rooms);
     });
 
     socket.on("user_connected", (username) => {
