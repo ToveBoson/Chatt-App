@@ -150,7 +150,9 @@ export default function Lobby() {
                 onCreate={handleCreateRoom}
               />
             )}
-            <button className="lobbyButton">Log out</button>
+
+            {/* // ska leda tillbaka till homepage/registrering av namn */}
+            <button className="lobbyButton" >Log out</button>
           </div>
           <h2>Rooms:</h2>
           <ul>
@@ -173,11 +175,10 @@ export default function Lobby() {
             {messagesReceived.map((message, i) => (
               <div key={i}>
                 <div
-                  className={`chatBox ${
-                    message.username === username
-                      ? "user-message"
-                      : "other-message"
-                  }`}
+                  className={`chatBox ${message.username === username
+                    ? "user-message"
+                    : "other-message"
+                    }`}
                 >
                   <p>{message.username}</p>
                   <p style={{ color: "#000" }}>{message.message}</p>
