@@ -11,6 +11,7 @@ export default function NewRoom() {
     console.log(newRoomName);
 
     setRoom((prev) => {
+      e.target.reset();
       setRoomToLeave(prev);
       return newRoomName;
     });
