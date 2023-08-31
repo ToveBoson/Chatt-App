@@ -11,10 +11,10 @@ export default function UserTyping() {
         onChange={(e) => setMessage(e.target.value)}
         className="input"
         type="text"
-        placeholder="Skriv ditt meddelande här"
+        placeholder="Write you message here..."
       />
       <button className="inputButton" onClick={sendMessage}>
-        Skicka
+        Send
       </button>
     </div>
   );

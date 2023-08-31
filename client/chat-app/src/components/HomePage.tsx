@@ -25,7 +25,7 @@ export default function HomePage() {
         <div className="inputContainer">
           <input
             className="inputHomePage"
-            placeholder="Skriv ditt användarnamn"
+            placeholder="Type in username"
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
@@ -33,7 +33,7 @@ export default function HomePage() {
             type="text"
           />
           <button onClick={loginUser} className="inputBtn">
-            Börja chatta
+            Start chat
           </button>
         </div>
       </div>
