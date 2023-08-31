@@ -13,7 +13,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const server = http.createServer(app);
 
-// sätta upp Socket.IO-funktionaliteten
 setupSocket(server);
 
 const start = () => {

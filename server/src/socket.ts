@@ -1,14 +1,4 @@
 import { Server as SocketServer } from "socket.io";
-import { v4 as uuidv4 } from "uuid";
-
-interface Room {
-  id: string;
-  name: string;
-}
-
-let activeRooms: Room[] = [];
-
-let userRooms = new Map();
 
 export function setupSocket(server: any) {
   const io = new SocketServer(server, {
@@ -18,82 +8,51 @@ export function setupSocket(server: any) {
   });
 
   io.on("connection", (socket) => {
-    const roomId = uuidv4();
-    console.log(`Användare: ${socket.id} är ansluten till rum: ${roomId}`);
-    console.log(io.sockets.adapter.rooms);
+    console.log("new user connected");
 
-    socket.on("join_room", (room) => {
-      socket.join(room);
-      userRooms.set(socket.id, room);
-      console.log("Användare går till rum ", room);
-      console.log(io.sockets.adapter.rooms);
-    });
-
-    socket.on("user_connected", (username) => {
-      // socket.broadcast.emit("user_connected_message", username);
-      socket.to(roomId).emit("user_connected_message", username);
-    });
-
-    socket.on("enter_new_room", (newRoom) => {
-      socket.join(newRoom);
-      console.log("Du är nu i ett nytt rum");
-
-      // socket.emit("custom_room_created", newRoom);
-    });
-
-    socket.on("send_to_user", (message) => {
-      const room = userRooms.get(socket.id);
-
-      if (room) {
-        message.sender = socket.id;
-        io.to(socket.id).emit("message", { text: message, sender: socket.id });
-        // io.to(room).emit("message", message);
-      }
-    });
-
+    socket.data.username = socket.handshake.auth.username;
     socket.on("join_room", (data) => {
-      const { username, room } = data;
+      socket.leave(data.roomToLeave);
+      socket.join(data.room);
+      const roomList = getRoomList(io.sockets.adapter.rooms);
 
-      createRoom(io, room, username);
-      joinRoom(socket, username, room);
-      socket.to(room).emit("user_connected_message", username, room); //La till detta nu
+      console.log(roomList);
+
+      io.emit("room_list", roomList);
     });
 
-    socket.on("leave_room", (room) => {
-      socket.leave(room);
-      console.log(io.sockets.adapter.rooms);
+    socket.on("send_message", ({ message, room }) => {
+      io.to(room).emit("message_received", message);
+    });
+
+    socket.on("user_typing", ({ isTyping, room }) => {
+      socket.to(room).emit("user_is_typing", isTyping);
     });
 
     socket.on("disconnect", () => {
-      const room = userRooms.get(socket.id);
-      if (room) {
-        socket.leave(room);
-        userRooms.delete(socket.id);
-      }
-      console.log("A user disconnected");
-    });
-
-    socket.on("send_message", async (data) => {
-      const { room } = data;
-      io.to(room).emit("receive_message", data); // Use 'to' instead of 'in' to send to a specific room
-    });
-
-    socket.on("get_active_rooms", () => {
-      socket.emit("active_rooms", activeRooms);
-    });
-
-    socket.on("user_typing", ({ username, room, isTyping }) => {
-      socket.to(room).emit("typing_indicator", { username, isTyping });
+      const roomList = getRoomList(io.sockets.adapter.rooms);
+      io.emit("room_list", roomList);
     });
   });
 
-  function joinRoom(socket: any, username: string, room: string) {
-    // Add the user to the room
-    socket.join(room);
-  }
-  function createRoom(io: any, roomName: string, username: string) {
-    const roomId = uuidv4();
-    const newRoom = { id: roomId, name: roomName, username: username };
-    console.log(`Rum "${roomName}" (ID: ${roomId}) `);
+  function getRoomList(mapOfSets: any) {
+    const arrayOfObjects: string[] = [];
+
+    if (!mapOfSets.has("Lobby")) {
+      mapOfSets.set("Lobby", new Set());
+    }
+
+    for (const [key, set] of mapOfSets) {
+      if (!set.has(key)) {
+        Array.from(set).map((socketId: any) => {
+          const socket = io.sockets.sockets.get(socketId);
+          return socket ? socket.data.username : "Unknown";
+        });
+
+        arrayOfObjects.push(key);
+      }
+    }
+
+    return arrayOfObjects;
   }
 }
