@@ -1,23 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-
-const SOCKET_URL = "http://localhost:3000";
+const SOCKET_URL = "http://localhost:9000";
 
 const socket = io(SOCKET_URL);
 
-//utgångspunkt - tom string - skall fyllas på när man 1. Går till Lobby, 2. går in i ett döpt rum
-const defaultValue = {
-  room: ""
-
-}
-
 type RoomContextType = {
   room: string;
-  setRoom: (room: string) => void;
+  setRoom: React.Dispatch<React.SetStateAction<string>>;
   hasJoinedRoom: boolean;
   setHasJoinedRoom: (hasJoined: boolean) => void;
   users: string[];
+  setRoomToLeave: React.Dispatch<React.SetStateAction<string>>;
+  roomList: string[];
+  sendMessage: () => void;
+  message: string;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
+  messageList: string[];
+  isTyping: boolean;
 };
 
 type UserProp = {
@@ -34,19 +34,60 @@ export const useRoomContext = () => {
 };
 
 export const RoomProvider = ({ children }: UserProp) => {
-  const [room, setRoom] = useState(""); //Tagit bort lobby som sträng
+  const [room, setRoom] = useState("");
   const [hasJoinedRoom, setHasJoinedRoom] = useState(false);
   const [users, setUsers] = useState([]);
+  const [roomToLeave, setRoomToLeave] = useState("");
+  const [roomList, setRoomList] = useState<any[]>([]);
+  const [message, setMessage] = useState("");
+  const [messageList, setMessageList] = useState<string[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
+    setMessageList([]);
+    socket.emit("join_room", { room, roomToLeave });
+  }, [room]);
 
-    socket.emit("join_room", room);
-  }, [room])
+  useEffect(() => {
+    socket.on("room_list", (roomList) => {
+      console.log(roomList);
+      setRoomList(roomList);
+    });
+    socket.on("message_received", (message) => {
+      setMessageList((prev) => [...prev, message]);
+    });
+    socket.on("user_is_typing", (isTyping) => {
+      setIsTyping(isTyping);
+    });
+  }, [socket]);
 
+  useEffect(() => {
+    socket.emit("user_typing", { isTyping: !!message, room });
+  }, [message]);
+
+  const sendMessage = () => {
+    if (message !== "") {
+      socket.emit("send_message", { message, room }); // Include room info
+      setMessage("");
+    }
+  };
 
   return (
     <RoomContext.Provider
-      value={{ room, setRoom, hasJoinedRoom, setHasJoinedRoom, users }}
+      value={{
+        room,
+        setRoom,
+        hasJoinedRoom,
+        setHasJoinedRoom,
+        users,
+        setRoomToLeave,
+        roomList,
+        message,
+        setMessage,
+        sendMessage,
+        messageList,
+        isTyping,
+      }}
     >
       {children}
     </RoomContext.Provider>
